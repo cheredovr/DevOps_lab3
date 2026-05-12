@@ -25,8 +25,8 @@ pipeline {
 
         stage('Test in Docker') {
             steps {
-                // Запускаем только что собранный образ и прогоняем тесты внутри него
-                sh "docker run --rm ${IMAGE_NAME}:${IMAGE_TAG} pytest tests/test_api.py"
+                // Убираем точный путь, просто запускаем pytest в корне контейнера
+                sh "docker run --rm ${IMAGE_NAME}:${IMAGE_TAG} pytest"
             }
         }
 
