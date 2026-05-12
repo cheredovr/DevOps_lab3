@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Наш сервис с моделью
+  ml_model:
+    build: ./app
+    container_name: vault_api_service
+    ports:
+      - "8000:8000"
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=myroot
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=ml_database
+    depends_on:
+      - vault
+      - postgres
+    networks:
+      - ml_network
+
+  # Хранилище секретов
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault
+    ports:
+      - "8200:8200"
+    # ОБХОДИМ СТАРТОВЫЙ СКРИПТ И ЗАПУСКАЕМ НАПРЯМУЮ:
+    entrypoint: vault server -dev -dev-root-token-id="myroot" -dev-listen-address="0.0.0.0:8200"
+    networks:
+      - ml_network
+
+  # База данных
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=ml_user
+      - POSTGRES_PASSWORD=ml_password
+      - POSTGRES_DB=ml_database
+    ports:
+      - "5432:5432"
+    networks:
+      - ml_network
+
+networks:
+  ml_network:
+    driver: bridge
